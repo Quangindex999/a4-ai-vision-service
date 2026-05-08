@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: AI Vision Service API
+  description: API cho dịch vụ phân tích hình ảnh và nhận diện bất thường trong Smart Campus.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local server
+paths:
+  /health:
+    get:
+      summary: Kiểm tra trạng thái service
+      responses:
+        "200":
+          description: Service hoạt động bình thường
+          content: # ✅ THÊM: khai báo response body để Swagger hiện đúng
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  service:
+                    type: string
+                    example: "ai-vision"
+                  timestamp:
+                    type: string
+                    example: "2026-05-06T09:00:00.000000"
+
+  /api/v1/vision/analyze:
+    post:
+      summary: Nhận diện đối tượng từ ảnh/frame
+      description: Nhận request chứa URL ảnh từ Camera Stream, phân tích và trả về kết quả.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [camera_id, image_url, timestamp]
+              properties:
+                camera_id:
+                  type: string
+                  example: "cam-gate-01"
+                image_url:
+                  type: string
+                  example: "http://example.com/frame.jpg"
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: "2026-05-02T09:10:00Z"
+      responses:
+        "200":
+          description: Trả về kết quả phân tích thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detected:
+                    type: boolean
+                    example: true
+                  label: # ✅ ĐỔI TÊN: từ "object" → "label" (object là từ khóa Python)
+                    type: string
+                    example: "person"
+                  confidence:
+                    type: number
+                    format: float
+                    minimum: 0.0 # ✅ THÊM: ràng buộc giá trị hợp lệ
+                    maximum: 1.0
+                    example: 0.91
+                  risk_level:
+                    type: string
+                    enum: [low, medium, high] # ✅ THÊM: khai báo rõ giá trị hợp lệ
+                    example: "medium"
+        "400":
+          description: Dữ liệu đầu vào không hợp lệ
+        "500":
+          description: Lỗi từ phía server (AI model failed)

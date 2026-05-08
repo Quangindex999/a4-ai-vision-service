@@ -1,0 +1,12 @@
+{
+  "id": "env-ai-vision-local",
+  "name": "AI Vision Local Env",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

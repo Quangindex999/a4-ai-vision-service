@@ -1,0 +1,32 @@
+services:
+  ai-vision:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: a4-ai-vision-service
+    ports:
+      - "${PORT:-8000}:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - smart-campus-network
+    # depends_on:
+    #   - core-business  # Uncomment khi tích hợp với nhóm A6
+    healthcheck:
+      # Dùng Python thay curl vì image slim không cài sẵn curl
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  # Mạng riêng cho Smart Campus, các nhóm khác có thể join vào
+  smart-campus-network:
+    driver: bridge

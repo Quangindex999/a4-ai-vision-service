@@ -1,0 +1,210 @@
+{
+  "info": {
+    "name": "A4 - AI Vision Service Tests",
+    "description": "Bộ kiểm thử tích hợp cho AI Vision Service (Product A)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check (Happy Path)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Service is healthy\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"ok\");",
+              "    pm.expect(jsonData.service).to.eql(\"ai-vision\");",
+              "});",
+              "pm.test(\"Response có trường timestamp\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('timestamp');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "2. Analyze Frame - Valid Data (Happy Path)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Kiểm tra định dạng JSON trả về\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('detected');",
+              "    pm.expect(jsonData).to.have.property('label');",
+              "    pm.expect(jsonData).to.have.property('risk_level');",
+              "});",
+              "pm.test(\"Confidence nằm trong khoảng 0-1\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.detected) {",
+              "        pm.expect(jsonData.confidence).to.be.within(0, 1);",
+              "    }",
+              "});",
+              "pm.test(\"risk_level là giá trị hợp lệ\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(['low', 'medium', 'high']).to.include(jsonData.risk_level);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"camera_id\": \"cam-gate-01\",\n  \"image_url\": \"http://example.com/frame.jpg\",\n  \"timestamp\": \"2026-05-02T09:10:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/vision/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "vision", "analyze"]
+        }
+      }
+    },
+    {
+      "name": "3. Analyze Frame - Missing image_url (Negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422 Validation Error\", function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test(\"Response có trường detail mô tả lỗi\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('detail');",
+              "    pm.expect(jsonData.detail).to.be.an('array').that.is.not.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"camera_id\": \"cam-gate-01\",\n  \"timestamp\": \"2026-05-02T09:10:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/vision/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "vision", "analyze"]
+        }
+      }
+    },
+    {
+      "name": "4. Analyze Frame - Missing camera_id (Negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422 Validation Error\", function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test(\"Response có trường detail mô tả lỗi\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('detail');",
+              "    pm.expect(jsonData.detail).to.be.an('array').that.is.not.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"image_url\": \"http://example.com/frame.jpg\",\n  \"timestamp\": \"2026-05-02T09:10:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/vision/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "vision", "analyze"]
+        }
+      }
+    },
+    {
+      "name": "5. Analyze Frame - Missing timestamp (Negative)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422 Validation Error\", function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "pm.test(\"Response có trường detail mô tả lỗi\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('detail');",
+              "    pm.expect(jsonData.detail).to.be.an('array').that.is.not.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"camera_id\": \"cam-gate-01\",\n  \"image_url\": \"http://example.com/frame.jpg\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/vision/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "vision", "analyze"]
+        }
+      }
+    }
+  ]
+}
