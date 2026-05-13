@@ -179,6 +179,8 @@ Bộ test được viết bằng Postman, bao gồm **5 test case** tự động
 2. Import `tests/environment_local.json` và chọn environment `AI Vision Local Env`
 3. Bấm **Run Collection**
 
+4. Link test Postman vào Swagger UI (test): https://equal-violate-fracture.ngrok-free.dev/api/v1/vision/analyze
+
 ### Chạy bằng Newman (CLI)
 
 ```bash

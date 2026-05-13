@@ -52,7 +52,7 @@ def analyze_frame(request: AnalyzeRequest):
         if mock_detected:
             return AnalyzeResponse(
                 detected=True,
-                label="person",            # ✅ ĐỔI TÊN: khớp với field mới
+                object="person",            # ✅ ĐỔI TÊN: khớp với field mới
                 confidence=0.95,
                 risk_level="medium"
             )
