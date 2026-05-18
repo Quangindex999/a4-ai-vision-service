@@ -1,67 +1,37 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-# Khởi tạo app
+from src.routes.api import router as api_router
+
 app = FastAPI(
     title="AI Vision Service",
     description="Smart Campus - AI Vision API",
-    version="1.0.0"
+    version="1.0.0",
 )
 
-# --- MODELS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class AnalyzeRequest(BaseModel):
-    camera_id: str
-    image_url: str
-    timestamp: datetime
+app.include_router(api_router)
 
-class AnalyzeResponse(BaseModel):
-    detected: bool
-    label: Optional[str] = None           # ✅ ĐỔI TÊN: "object" → "label" (object là built-in Python)
-    confidence: float = Field(            # ✅ THÊM: ràng buộc range hợp lệ bằng Field
-        default=0.0, ge=0.0, le=1.0
-    )
-    risk_level: str = "low"
-
-# --- ROUTES ---
 
 @app.get("/health")
 def health_check():
-    """Endpoint để Docker/Compose kiểm tra xem service có đang sống không"""
     return {
         "status": "ok",
         "service": "ai-vision",
-        "timestamp": datetime.now().isoformat()   # ✅ SỬA: .isoformat() để JSON-serializable
+        "timestamp": datetime.now().isoformat(),
     }
 
-@app.post("/api/v1/vision/analyze", response_model=AnalyzeResponse)
-def analyze_frame(request: AnalyzeRequest):
-    """
-    Nhận frame ảnh từ nhóm Camera Stream (A2).
-    Tại đây chúng ta sẽ giả lập (mock) logic gọi AI trước.
-    """
-    try:
-        # TODO: Cắm logic gọi OpenCV, YOLO hoặc AI Agent ở đây sau
-        # Hiện tại mock data để trả về ngay lập tức
 
-        mock_detected = True
-
-        if mock_detected:
-            return AnalyzeResponse(
-                detected=True,
-                object="person",            # ✅ ĐỔI TÊN: khớp với field mới
-                confidence=0.95,
-                risk_level="medium"
-            )
-        else:
-            return AnalyzeResponse(detected=False)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     return """
